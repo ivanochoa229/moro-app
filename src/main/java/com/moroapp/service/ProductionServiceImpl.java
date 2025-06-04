@@ -29,6 +29,7 @@ public class ProductionServiceImpl implements ProductionService {
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         int quantity_plots = productionRequest.quantity_plots(), p = 0, springType;
         double productionExpected= 0.0, productionLost = 0.0;
+        Boolean invert;
         Double number = GenerateRandomNumber();
         if(number <= 0.3){
             springType = 1;
@@ -48,21 +49,21 @@ public class ProductionServiceImpl implements ProductionService {
                 number = GenerateRandomNumber();
                 if(number <= 0.6){
                     number = GenerateRandomNumber();
-                    double damaged = ProbabilisticDistributions.uniformDistribution(20, 30, number)/100;
+                    double damaged = ProbabilisticDistributions.uniformDistribution(20, 50, number)/100;
                     productionLost = productionLost + prod*damaged;
                 }
             }else if(springType == 2){
                 number = GenerateRandomNumber();
                 if(number <= 0.3){
                     number = GenerateRandomNumber();
-                    double damaged = ProbabilisticDistributions.uniformDistribution(20, 30, number)/100;
+                    double damaged = ProbabilisticDistributions.uniformDistribution(20, 50, number)/100;
                     productionLost = productionLost + prod*damaged;
                 }
             }else{
                 number = GenerateRandomNumber();
                 if(number <= 0.1){
                     number = GenerateRandomNumber();
-                    double damaged = ProbabilisticDistributions.uniformDistribution(20, 30, number)/100;
+                    double damaged = ProbabilisticDistributions.uniformDistribution(20, 50, number)/100;
                     productionLost = productionLost + prod*damaged;
                 }
             }
@@ -70,13 +71,15 @@ public class ProductionServiceImpl implements ProductionService {
         }
         double globalLostPercentage = productionLost/productionExpected;
         double realProduction = productionExpected - productionLost;
-        if(globalLostPercentage <= 0.3){
-            System.out.println("No invertir");
+        if(globalLostPercentage <= 0.20){
+            invert = false;
+        }else{
+            invert = true;
         }
-        Production production = new Production(quantity_plots, productionExpected, productionLost, realProduction, springType);
+        Production production = new Production(quantity_plots, productionExpected, productionLost, realProduction, springType, invert);
         productionRepository.save(production);
         String formattedDate = sdf.format( production.getDate_simulation());
-        return new ProductionResponse(0L, quantity_plots, productionExpected, productionLost, realProduction, formattedDate, springType);
+        return new ProductionResponse(production.getId_production(), quantity_plots, productionExpected, productionLost, realProduction, formattedDate, springType, invert);
     }
 
     @Override
@@ -94,7 +97,8 @@ public class ProductionServiceImpl implements ProductionService {
                 productionData.getLost_production(),
                 productionData.getReal_production(),
                 formattedDate,
-                productionData.getSpring_type());
+                productionData.getSpring_type(),
+                productionData.getInvert());
     }
 
     @Override
@@ -110,7 +114,8 @@ public class ProductionServiceImpl implements ProductionService {
                         prod.getLost_production(),
                         prod.getReal_production(),
                         sdf.format(prod.getDate_simulation()),
-                        prod.getSpring_type()
+                        prod.getSpring_type(),
+                        prod.getInvert()
                 ))
                 .collect(Collectors.toList());
     }
@@ -118,9 +123,9 @@ public class ProductionServiceImpl implements ProductionService {
     private Double GenerateRandomNumber() {
         Random random = new Random();
         while (true) {  // Bucle infinito hasta que se cumpla la condición
-            int a = random.nextInt(9000) + 1000;      // a ∈ [1000, 9999]
-            int seed =random.nextInt(9000) + 1000;  ;                             // seed = a (según tu requisito)
-            int module = random.nextInt(900) + 100;   // module ∈ [100, 999]
+            int a = random.nextInt(9000) + 1000;
+            int seed =random.nextInt(9000) + 1000;  ;
+            int module = random.nextInt(900) + 100;
 
             // Genera 10 números pseudoaleatorios (puedes ajustar la cantidad)
             List<Double> pseudoNumbers = MultiplicativeCongruentialGenerator.generateNumbers(a, seed, module, 10);
@@ -130,7 +135,7 @@ public class ProductionServiceImpl implements ProductionService {
 
             if (isRandom) {
                 // Devuelve el primer número de la lista (o puedes elegir otro criterio)
-                return pseudoNumbers.get(0);
+                return pseudoNumbers.get(0)*10;
             }
             // Si no pasa la prueba, repite el proceso
         }

@@ -13,7 +13,8 @@ CREATE TABLE production (
                             lost_production DOUBLE PRECISION,
                             real_production DOUBLE PRECISION,
                             date_simulation DATE DEFAULT CURRENT_DATE,
-                            spring_type INTEGER not null
+                            spring_type INTEGER not null,
+                            invert BOOLEAN DEFAULT false
 );
 
 ALTER TABLE public.production ALTER COLUMN id_production SET DEFAULT nextval('production_id_seq');

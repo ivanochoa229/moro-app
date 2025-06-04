@@ -17,18 +17,28 @@ public class Production {
     private Double lost_production;
     private Double real_production;
     private Date date_simulation;
+    private Boolean invert;
 
     public Production() {
         date_simulation = new Date();
     }
 
-    public Production(int quantity_plots, Double expected_production, Double lost_production, Double real_production, int spring_type) {
+    public Production(int quantity_plots, Double expected_production, Double lost_production, Double real_production, int spring_type, Boolean invert) {
         this.quantity_plots = quantity_plots;
         this.expected_production = expected_production;
         this.lost_production = lost_production;
         this.real_production = real_production;
         this.spring_type = spring_type;
         this.date_simulation = new Date();
+        this.invert = invert;
+    }
+
+    public Boolean getInvert() {
+        return invert;
+    }
+
+    public void setInvert(Boolean invert) {
+        this.invert = invert;
     }
 
     public int getSpring_type() {
