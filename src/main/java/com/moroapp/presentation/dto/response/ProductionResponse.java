@@ -7,5 +7,6 @@ public record ProductionResponse(Long id_production, int quantity_plots,
                                  Double real_production,
                                  String date_simulation,
                                  int spring_type,
-                                 Boolean invert) {
+                                 Boolean invert,
+                                 int quantity_affected_plots) {
 }

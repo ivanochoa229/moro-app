@@ -14,7 +14,8 @@ CREATE TABLE production (
                             real_production DOUBLE PRECISION,
                             date_simulation DATE DEFAULT CURRENT_DATE,
                             spring_type INTEGER not null,
-                            invert BOOLEAN DEFAULT false
+                            invert BOOLEAN DEFAULT false,
+                            quantity_affected_plots INTEGER not null
 );
 
 ALTER TABLE public.production ALTER COLUMN id_production SET DEFAULT nextval('production_id_seq');

@@ -12,6 +12,7 @@ public class Production {
     @SequenceGenerator(name = "production_seq_gen", sequenceName = "production_id_seq", allocationSize = 1)
     private Long id_production;
     private int quantity_plots;
+    private int quantity_affected_plots;
     private int spring_type;
     private Double expected_production;
     private Double lost_production;
@@ -23,14 +24,23 @@ public class Production {
         date_simulation = new Date();
     }
 
-    public Production(int quantity_plots, Double expected_production, Double lost_production, Double real_production, int spring_type, Boolean invert) {
+    public Production(int quantity_plots, Double expected_production, Double lost_production, Double real_production, int spring_type, Boolean invert, int quantity_affected_plots) {
         this.quantity_plots = quantity_plots;
         this.expected_production = expected_production;
         this.lost_production = lost_production;
         this.real_production = real_production;
         this.spring_type = spring_type;
         this.date_simulation = new Date();
+        this.quantity_affected_plots = quantity_affected_plots;
         this.invert = invert;
+    }
+
+    public int getQuantity_affected_plots() {
+        return quantity_affected_plots;
+    }
+
+    public void setQuantity_affected_plots(int quantity_affected_plots) {
+        this.quantity_affected_plots = quantity_affected_plots;
     }
 
     public Boolean getInvert() {

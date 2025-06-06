@@ -27,7 +27,7 @@ public class ProductionServiceImpl implements ProductionService {
     @Override
     public ProductionResponse simulateProduction(ProductionRequest productionRequest) {
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
-        int quantity_plots = productionRequest.quantity_plots(), p = 0, springType;
+        int quantity_plots = productionRequest.quantity_plots(), p = 0, springType, quantity_affected_plots = 0;
         double productionExpected= 0.0, productionLost = 0.0;
         Boolean invert;
         Double number = GenerateRandomNumber();
@@ -51,6 +51,7 @@ public class ProductionServiceImpl implements ProductionService {
                     number = GenerateRandomNumber();
                     double damaged = ProbabilisticDistributions.uniformDistribution(20, 50, number)/100;
                     productionLost = productionLost + prod*damaged;
+                    quantity_affected_plots++;
                 }
             }else if(springType == 2){
                 number = GenerateRandomNumber();
@@ -58,6 +59,7 @@ public class ProductionServiceImpl implements ProductionService {
                     number = GenerateRandomNumber();
                     double damaged = ProbabilisticDistributions.uniformDistribution(20, 50, number)/100;
                     productionLost = productionLost + prod*damaged;
+                    quantity_affected_plots++;
                 }
             }else{
                 number = GenerateRandomNumber();
@@ -65,21 +67,23 @@ public class ProductionServiceImpl implements ProductionService {
                     number = GenerateRandomNumber();
                     double damaged = ProbabilisticDistributions.uniformDistribution(20, 50, number)/100;
                     productionLost = productionLost + prod*damaged;
+                    quantity_affected_plots++;
                 }
             }
             p++;
         }
         double globalLostPercentage = productionLost/productionExpected;
+        System.out.println("GLOBAL PERCENT : " + globalLostPercentage);
         double realProduction = productionExpected - productionLost;
-        if(globalLostPercentage <= 0.20){
+        if(globalLostPercentage <= 0.25){
             invert = false;
         }else{
             invert = true;
         }
-        Production production = new Production(quantity_plots, productionExpected, productionLost, realProduction, springType, invert);
+        Production production = new Production(quantity_plots, productionExpected, productionLost, realProduction, springType, invert, quantity_affected_plots);
         productionRepository.save(production);
         String formattedDate = sdf.format( production.getDate_simulation());
-        return new ProductionResponse(production.getId_production(), quantity_plots, productionExpected, productionLost, realProduction, formattedDate, springType, invert);
+        return new ProductionResponse(production.getId_production(), quantity_plots, productionExpected, productionLost, realProduction, formattedDate, springType, invert, quantity_affected_plots);
     }
 
     @Override
@@ -98,7 +102,8 @@ public class ProductionServiceImpl implements ProductionService {
                 productionData.getReal_production(),
                 formattedDate,
                 productionData.getSpring_type(),
-                productionData.getInvert());
+                productionData.getInvert(),
+                productionData.getQuantity_affected_plots());
     }
 
     @Override
@@ -115,7 +120,8 @@ public class ProductionServiceImpl implements ProductionService {
                         prod.getReal_production(),
                         sdf.format(prod.getDate_simulation()),
                         prod.getSpring_type(),
-                        prod.getInvert()
+                        prod.getInvert(),
+                        prod.getQuantity_affected_plots()
                 ))
                 .collect(Collectors.toList());
     }
@@ -124,18 +130,18 @@ public class ProductionServiceImpl implements ProductionService {
         Random random = new Random();
         while (true) {  // Bucle infinito hasta que se cumpla la condición
             int a = random.nextInt(9000) + 1000;
-            int seed =random.nextInt(9000) + 1000;  ;
+            int seed =random.nextInt(9000) + 1000;
             int module = random.nextInt(900) + 100;
 
             // Genera 10 números pseudoaleatorios (puedes ajustar la cantidad)
-            List<Double> pseudoNumbers = MultiplicativeCongruentialGenerator.generateNumbers(a, seed, module, 10);
-
+            List<Double> pseudoNumbers = MultiplicativeCongruentialGenerator.generateNumbers(a, seed, module, 50);
             // Verifica si pasan la prueba de Kolmogorov-Smirnov
             boolean isRandom = KolmogorovSmirnovTest.checkSample(pseudoNumbers);
 
             if (isRandom) {
                 // Devuelve el primer número de la lista (o puedes elegir otro criterio)
-                return pseudoNumbers.get(0)*10;
+                int randomIndex = random.nextInt(pseudoNumbers.size());
+                return pseudoNumbers.get(randomIndex);
             }
             // Si no pasa la prueba, repite el proceso
         }
